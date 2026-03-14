@@ -546,7 +546,7 @@ function addScore(team, delta) {
 function applyScore(team, delta, playerName) {
   STATE.scoreHistory.push({ a: STATE.scores.a, b: STATE.scores.b, turn: STATE.turn });
   if (STATE.scoreHistory.length > 50) STATE.scoreHistory.shift();
-  STATE.scores[team] = Math.max(0, STATE.scores[team] + delta);
+  STATE.scores[team] = STATE.scores[team] + delta;  // no floor — negatives allowed
   playSound(delta > 0 ? 'correct' : 'wrong');
 
   // Fire a scoreEvent so audience shows the player notification
@@ -836,16 +836,20 @@ function spinWheel(type) {
 
     if (p < 1) { requestAnimationFrame(frame); return; }
 
-    // Determine winning section for weighted wheel (pointer at top)
-    const norm = ((ws.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-    // Pointer is at top (π/2 from 0 in canvas terms = angle 0 from our draw start)
-    // The section whose arc range contains (2π - norm) is the winner
+    // Determine winning section for weighted wheel.
+    // The pointer sits at the TOP of the canvas = canvas angle -π/2.
+    // Sections are drawn from ws.angle clockwise.
+    // relAngle = how far the pointer is from the first section's start,
+    // measured along the wheel's rotation.
+    const TAU = Math.PI * 2;
+    const POINTER_ANGLE = -Math.PI / 2;  // top of canvas (12 o'clock)
     const totalW2 = sections.reduce((s, sec) => s + (sec.weight || 1), 0);
-    const pointerPos = ((Math.PI * 2) - norm + Math.PI * 2) % (Math.PI * 2);
+    // Angle of pointer relative to the wheel's current start
+    const relAngle = ((POINTER_ANGLE - ws.angle) % TAU + TAU) % TAU;
     let cumulative = 0, idx = 0;
     for (let k = 0; k < sections.length; k++) {
-      const arc = (sections[k].weight || 1) / totalW2 * (Math.PI * 2);
-      if (pointerPos >= cumulative && pointerPos < cumulative + arc) { idx = k; break; }
+      const arc = (sections[k].weight || 1) / totalW2 * TAU;
+      if (relAngle >= cumulative && relAngle < cumulative + arc) { idx = k; break; }
       cumulative += arc;
     }
     const result = sections[idx].label;
@@ -1221,8 +1225,8 @@ function fsApplyScore() {
   const b = parseInt(document.getElementById('fs-score-b').value);
   if (isNaN(a) || isNaN(b)) { fsToast('⚠ Enter valid numbers for both scores.', 'warn'); return; }
   logAction('Manual override → A:' + a + ' B:' + b);
-  STATE.scores.a = Math.max(0, a);
-  STATE.scores.b = Math.max(0, b);
+  STATE.scores.a = a;  // negatives allowed
+  STATE.scores.b = b;
   syncState();
   fsToast('✔ Scores updated: A=' + STATE.scores.a + '  B=' + STATE.scores.b, 'ok');
 }
