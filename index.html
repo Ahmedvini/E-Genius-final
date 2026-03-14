@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-GENIUS FINAL – Host Panel</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
+</head>
+<body class="admin-body">
+
+<!-- ═══════════════════════════════════════════════════════════
+     HOST ADMIN PANEL  (Window 1 – Laptop Screen)
+     All controls live here. Audience sees nothing of this panel.
+     ═══════════════════════════════════════════════════════════ -->
+<div id="admin-panel">
+
+  <!-- TOP BAR -->
+  <div class="admin-topbar">
+    <h1 class="admin-title">🎯 E-GENIUS FINAL — Host Panel</h1>
+    <button id="btn-open-audience" class="btn-primary btn-lg pulse-btn" onclick="openAudienceWindow()">▶ Start Presentation Mode</button>
+  </div>
+
+  <div class="admin-grid">
+
+    <!-- ════ PANEL 1: Teams & Turn ════ -->
+    <section class="panel-card" id="panel-teams">
+      <h2>👥 Teams &amp; Scores</h2>
+      <div class="team-row">
+
+        <!-- Team A -->
+        <div class="team-block" id="admin-team-a">
+          <input class="team-name-input" id="name-a" value="Team A" oninput="syncState()" />
+          <div class="score-display" id="score-a-display">0</div>
+          <div class="score-btns">
+            <button class="btn-score btn-correct" onclick="addScore('a',10)">+10</button>
+            <button class="btn-score btn-correct" onclick="addScore('a',20)">+20</button>
+            <button class="btn-score btn-correct" onclick="addScore('a',25)">+25</button>
+            <button class="btn-score btn-correct" onclick="addScore('a',30)">+30</button>
+            <button class="btn-score btn-wrong"   onclick="addScore('a',-5)">−5</button>
+            <button class="btn-score btn-wrong"   onclick="addScore('a',-10)">−10</button>
+          </div>
+          <button class="btn-turn" onclick="setTurn('a')">Set Turn ➤ Team A</button>
+
+          <!-- Player Roster - Team A -->
+          <div class="player-roster-section">
+            <div class="player-add-row">
+              <input type="text" id="player-input-a" class="player-name-input" placeholder="أضف لاعب..." maxlength="24" />
+              <button class="btn-add-player" onclick="addPlayer('a')">+ إضافة</button>
+            </div>
+            <div class="player-roster" id="roster-a"></div>
+          </div>
+        </div>
+
+        <div class="vs-badge">VS</div>
+
+        <!-- Team B -->
+        <div class="team-block" id="admin-team-b">
+          <input class="team-name-input" id="name-b" value="Team B" oninput="syncState()" />
+          <div class="score-display" id="score-b-display">0</div>
+          <div class="score-btns">
+            <button class="btn-score btn-correct" onclick="addScore('b',10)">+10</button>
+            <button class="btn-score btn-correct" onclick="addScore('b',20)">+20</button>
+            <button class="btn-score btn-correct" onclick="addScore('b',25)">+25</button>
+            <button class="btn-score btn-correct" onclick="addScore('b',30)">+30</button>
+            <button class="btn-score btn-wrong"   onclick="addScore('b',-5)">−5</button>
+            <button class="btn-score btn-wrong"   onclick="addScore('b',-10)">−10</button>
+          </div>
+          <button class="btn-turn" onclick="setTurn('b')">Set Turn ➤ Team B</button>
+
+          <!-- Player Roster - Team B -->
+          <div class="player-roster-section">
+            <div class="player-add-row">
+              <input type="text" id="player-input-b" class="player-name-input" placeholder="أضف لاعب..." maxlength="24" />
+              <button class="btn-add-player" onclick="addPlayer('b')">+ إضافة</button>
+            </div>
+            <div class="player-roster" id="roster-b"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="turn-controls">
+        <div class="current-turn-badge" id="current-turn-badge">Current Turn: Team A</div>
+        <button class="btn-secondary" onclick="switchTurn()">🔄 Switch Turn</button>
+        <button class="btn-danger"    onclick="undoScore()">↩ Undo Last Score</button>
+      </div>
+    </section>
+
+    <!-- ════ PANEL 2: Round Control & Timer ════ -->
+    <section class="panel-card" id="panel-rounds">
+      <h2>🎬 Round Control</h2>
+      <div class="round-selector">
+        <button class="btn-round" onclick="setRound('speed')">⚡ Speed Q</button>
+        <button class="btn-round" onclick="setRound(1)">R1 – العلم</button>
+        <button class="btn-round" onclick="setRound(2)">R2 – المعرفة</button>
+        <button class="btn-round" onclick="setRound(3)">R3 – الفنون</button>
+        <button class="btn-round" onclick="setRound(4)">R4 – تحت الضغط</button>
+        <button class="btn-round" onclick="setRound(5)">R5 – ضربات الجزاء</button>
+        <button class="btn-round" onclick="setRound(6)">R6 – عجلة الحظ</button>
+      </div>
+
+      <!-- Speed Question Controls -->
+      <div id="speed-q-section" class="sub-section">
+        <h3>⚡ Speed Question (No Points)</h3>
+        <p class="hint-text">First correct answer → that team starts Round 1.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-correct btn-lg" onclick="speedWin('a')">✔ Team A Answered Correctly</button>
+          <button class="btn-correct btn-lg" onclick="speedWin('b')">✔ Team B Answered Correctly</button>
+        </div>
+      </div>
+
+      <!-- Round 4 Special Controls -->
+      <div id="r4-section" class="sub-section" style="display:none">
+        <h3>🔥 Round 4 — تحت الضغط (40s each)</h3>
+        <div class="r4-inputs">
+          <label>Team A correct: <input type="number" id="r4-a" value="0" min="0" max="8" /></label>
+          <label>Team B correct: <input type="number" id="r4-b" value="0" min="0" max="8" /></label>
+          <button class="btn-correct" onclick="calcR4()">✔ Apply R4 Scores + Bonus</button>
+        </div>
+        <p class="hint-text">+5 per correct. Winner gets +10 bonus. Timer set to 40s automatically.</p>
+      </div>
+
+      <!-- Timer -->
+      <div class="sub-section">
+        <h3>⏱ Timer</h3>
+        <div class="timer-controls">
+          <input type="number" id="timer-set" value="40" min="1" max="999" />
+          <button class="btn-secondary" onclick="setTimerVal()">Set</button>
+          <button class="btn-correct"   onclick="startTimer()">▶ Start</button>
+          <button class="btn-wrong"     onclick="pauseTimer()">⏸ Pause</button>
+          <button class="btn-secondary" onclick="resetTimer()">↺ Reset</button>
+        </div>
+        <div id="admin-timer-display" class="admin-timer">40</div>
+      </div>
+    </section>
+
+    <!-- ════ PANEL 3: Wheels ════ -->
+    <section class="panel-card" id="panel-wheels">
+      <h2>🎡 Wheels</h2>
+      <div class="wheels-row">
+        <div class="wheel-ctrl">
+          <h3>Team Selector</h3>
+          <canvas id="wheel-team-canvas" width="260" height="260"></canvas>
+          <button class="btn-spin" onclick="spinWheel('team')">🌀 Spin</button>
+          <div class="wheel-result" id="result-team">—</div>
+        </div>
+        <div class="wheel-ctrl">
+          <h3>Category Selector</h3>
+          <canvas id="wheel-cat-canvas" width="260" height="260"></canvas>
+          <button class="btn-spin" onclick="spinWheel('cat')">🌀 Spin</button>
+          <div class="wheel-result" id="result-cat">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ PANEL 4: Image Manager ════ -->
+    <section class="panel-card" id="panel-images">
+      <h2>🖼 Image Manager</h2>
+
+      <!-- Embedded Logo Upload -->
+      <div class="sub-section" style="margin-bottom:10px">
+        <h3>🏷 Logos (Embedded into Page)</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <label class="upload-btn" style="font-size:11px">
+            📁 Left Logo (TEDxEJUST)
+            <input type="file" accept="image/*" onchange="uploadLogo(event,'left')" style="display:none" />
+          </label>
+          <label class="upload-btn" style="font-size:11px">
+            📁 Right Logo (eGenius)
+            <input type="file" accept="image/*" onchange="uploadLogo(event,'right')" style="display:none" />
+          </label>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:6px;align-items:center">
+          <img id="logo-preview-left"  src="" alt="" style="height:36px;object-fit:contain;display:none;border:1px solid #2A2F55;border-radius:4px;padding:2px" />
+          <img id="logo-preview-right" src="" alt="" style="height:36px;object-fit:contain;display:none;border:1px solid #2A2F55;border-radius:4px;padding:2px" />
+        </div>
+        <p class="hint-text">Logos are base64 embedded — no external files needed.</p>
+      </div>
+
+      <!-- Wheel Toggle -->
+      <div class="sub-section" style="margin-bottom:10px">
+        <h3>🎡 Wheel Visibility on Audience Screen</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-correct" id="btn-show-wheels" onclick="setWheelVisibility(true)">👁 Show Wheels</button>
+          <button class="btn-wrong"   id="btn-hide-wheels" onclick="setWheelVisibility(false)">🙈 Hide Wheels</button>
+        </div>
+        <p class="hint-text" id="wheel-vis-status">Wheels: Visible ✔</p>
+      </div>
+
+      <!-- Image Upload -->
+      <label class="upload-btn">
+        📁 Upload Images
+        <input type="file" id="img-upload" multiple accept="image/*" onchange="uploadImages(event)" style="display:none" />
+      </label>
+      <div id="img-list" class="img-list"></div>
+      <button class="btn-wrong" style="margin-top:8px" onclick="hideAudienceImage()">🚫 Hide Image on Screen</button>
+    </section>
+
+    <!-- ════ PANEL 5: Sound ════ -->
+    <section class="panel-card" id="panel-sound">
+      <h2>🔊 Sound Effects</h2>
+      <div class="sound-row">
+        <label><input type="checkbox" id="sound-enabled" checked /> Enable Sounds</label>
+        <label>Volume: <input type="range" id="volume-ctrl" min="0" max="1" step="0.05" value="0.7" /></label>
+      </div>
+      <div class="sound-test-btns">
+        <button class="btn-secondary" onclick="playSound('correct')">✔ Correct</button>
+        <button class="btn-secondary" onclick="playSound('wrong')">✖ Wrong</button>
+        <button class="btn-secondary" onclick="playSound('spin')">🌀 Spin</button>
+        <button class="btn-secondary" onclick="playSound('win')">🏆 Win</button>
+      </div>
+    </section>
+
+    <!-- ════ PANEL 6: Question Board (full width) ════ -->
+    <section class="panel-card full-width" id="panel-qboard">
+      <h2>📋 Question Tracker</h2>
+      <div id="question-board" class="qboard-grid"></div>
+    </section>
+
+    <!-- ════ PANEL 7: FAIL-SAFE CONTROL SYSTEM (full width) ════
+         All controls here are ADMIN ONLY — never visible on audience screen.
+         Purpose: recover from mistakes or bugs during the live event.
+    ══════════════════════════════════════════════════════════════ -->
+    <section class="panel-card full-width failsafe-panel" id="panel-failsafe">
+
+      <h2>🛡 FAIL-SAFE &amp; EMERGENCY CONTROLS <span class="fs-badge">HOST ONLY</span></h2>
+
+      <div class="fs-grid">
+
+        <!-- ── 1. Manual Score Override ── -->
+        <div class="fs-block" id="fs-scores">
+          <div class="fs-block-title">✏️ Manual Score Override</div>
+          <div class="fs-block-body">
+            <div class="fs-score-row">
+              <label>
+                <span id="fs-label-a">Team A</span>
+                <input type="number" id="fs-score-a" value="0" min="0" max="9999" />
+              </label>
+              <label>
+                <span id="fs-label-b">Team B</span>
+                <input type="number" id="fs-score-b" value="0" min="0" max="9999" />
+              </label>
+              <button class="fs-btn fs-btn-apply" onclick="fsApplyScore()">✔ Apply Scores</button>
+            </div>
+            <p class="hint-text">Directly sets both scores — bypasses scoring logic. Updates audience instantly.</p>
+          </div>
+        </div>
+
+        <!-- ── 2. Undo Last Action ── -->
+        <div class="fs-block" id="fs-undo">
+          <div class="fs-block-title">↩ Undo Last Action</div>
+          <div class="fs-block-body">
+            <div class="fs-undo-log" id="fs-undo-log">No actions yet.</div>
+            <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+              <button class="fs-btn fs-btn-undo" onclick="fsUndo()">↩ Undo Last Action</button>
+              <button class="fs-btn fs-btn-warn" onclick="fsUndoMultiple(3)">↩↩↩ Undo Last 3</button>
+            </div>
+            <p class="hint-text">Reverts score additions, deductions, joker scores, bonuses.</p>
+          </div>
+        </div>
+
+        <!-- ── 3. Emergency Round Override ── -->
+        <div class="fs-block" id="fs-round">
+          <div class="fs-block-title">🎬 Emergency Round Override</div>
+          <div class="fs-block-body">
+            <select id="fs-round-select" class="fs-select">
+              <option value="speed">⚡ Speed Question</option>
+              <option value="1">Round 1 – العلم</option>
+              <option value="2">Round 2 – المعرفة</option>
+              <option value="3">Round 3 – الفنون</option>
+              <option value="4">Round 4 – تحت الضغط</option>
+              <option value="5">Round 5 – ضربات الجزاء</option>
+              <option value="6">Round 6 – عجلة الحظ</option>
+            </select>
+            <button class="fs-btn fs-btn-apply" onclick="fsForceRound()">⚡ Force Round</button>
+            <p class="hint-text">Overrides the automatic round system. Updates audience label immediately.</p>
+          </div>
+        </div>
+
+        <!-- ── 4. Timer Emergency Controls ── -->
+        <div class="fs-block" id="fs-timer">
+          <div class="fs-block-title">⏱ Timer Emergency</div>
+          <div class="fs-block-body">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <input type="number" id="fs-timer-val" value="40" min="1" max="999" style="width:70px" class="fs-input" />
+              <button class="fs-btn fs-btn-apply" onclick="fsSetTimer()">⚡ Set &amp; Reset</button>
+              <button class="fs-btn fs-btn-warn"  onclick="fsPauseTimer()">⏸ Force Pause</button>
+              <button class="fs-btn fs-btn-undo"  onclick="fsAddTime(30)">+30s</button>
+              <button class="fs-btn fs-btn-undo"  onclick="fsAddTime(60)">+60s</button>
+            </div>
+            <p class="hint-text">Instantly updates timer on audience screen. Use +30s / +60s to add time mid-round.</p>
+          </div>
+        </div>
+
+        <!-- ── 5. Image Emergency Controls ── -->
+        <div class="fs-block" id="fs-images">
+          <div class="fs-block-title">🖼 Image Emergency</div>
+          <div class="fs-block-body">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <select id="fs-img-select" class="fs-select" style="flex:1;min-width:140px">
+                <option value="">— Select uploaded image —</option>
+              </select>
+              <button class="fs-btn fs-btn-apply" onclick="fsShowImage()">👁 Show Now</button>
+              <button class="fs-btn fs-btn-warn"  onclick="fsHideImage()">🚫 Hide Image</button>
+              <button class="fs-btn fs-btn-undo"  onclick="fsClearScreen()">🧹 Clear Screen</button>
+            </div>
+            <p class="hint-text">Instantly shows or clears the image overlay on the audience screen.</p>
+          </div>
+        </div>
+
+        <!-- ── 6. Panic Reset / Reload ── -->
+        <div class="fs-block fs-block-danger" id="fs-panic">
+          <div class="fs-block-title">🚨 Emergency Actions</div>
+          <div class="fs-block-body">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="fs-btn fs-btn-reload" onclick="fsReloadAudience()">🔄 Reload Audience Screen</button>
+              <button class="fs-btn fs-btn-warn"   onclick="fsHideWheelBanner()">🌀 Hide Wheel Banner</button>
+              <button class="fs-btn fs-btn-danger" onclick="fsResetScores()">💣 Reset ALL Scores</button>
+            </div>
+            <p class="hint-text danger-text">⚠ Reload refreshes the projector without losing state. Reset Scores requires confirmation.</p>
+          </div>
+        </div>
+
+      </div><!-- /fs-grid -->
+    </section><!-- /failsafe-panel -->
+
+  </div><!-- /admin-grid -->
+</div><!-- /admin-panel -->
+
+<!-- ════ CUSTOM CONFIRMATION MODAL ════
+     Used by all dangerous fail-safe actions.
+     Never appears on audience screen.
+════════════════════════════════════════ -->
+<div id="fs-modal-overlay" class="fs-modal-overlay" style="display:none">
+  <div class="fs-modal">
+    <div class="fs-modal-icon">⚠️</div>
+    <div class="fs-modal-title" id="fs-modal-title">Are you sure?</div>
+    <div class="fs-modal-msg"   id="fs-modal-msg">This action cannot be undone.</div>
+    <div class="fs-modal-btns">
+      <button class="fs-btn fs-btn-danger" id="fs-modal-confirm">✔ Confirm</button>
+      <button class="fs-btn fs-btn-cancel" id="fs-modal-cancel">✕ Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ PLAYER PICKER MODAL ════
+     Opens when a score button is pressed and the team has players.
+     Admin selects who scored. Never shown on audience.
+═══════════════════════════════════════════════════════════════ -->
+<div id="player-picker-modal" class="pp-overlay" style="display:none">
+  <div class="pp-modal">
+    <div class="pp-modal-header">
+      <div class="pp-modal-icon">👤</div>
+      <div class="pp-modal-title" id="pp-title">اختر اللاعب</div>
+      <button class="pp-close-btn" onclick="closePP()">✕</button>
+    </div>
+    <div class="pp-list" id="pp-list"></div>
+    <p class="hint-text" style="text-align:center;margin-top:8px">اختر لاعب أو اضغط بدون لاعب لتطبيق النقاط فقط</p>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
